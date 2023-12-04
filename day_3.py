@@ -1,6 +1,6 @@
 from functools import reduce
 import re
-from typing import Dict, List, Set, Tuple
+from typing import Dict, Iterable, List, Set, Tuple
 from utils import load_data
 
 DATA = load_data(__name__)
@@ -72,10 +72,10 @@ def get_part_numbers():
 
 
 def get_adjacent_numbers(
-    data: List[str], line_idx: int, adjacency: Tuple[int, int]
+    data: List[str], line_idx: int, adjacency: Iterable
 ) -> List[int]:  # -> list[Any]:
     adjancent_numbers = []
-    start = line_idx - 1 if line_idx > 0 else 0
+    start = line_idx - 1 if line_idx >= 0 else 0
     for adj_line in data[start : line_idx + 2]:
         for number, location in get_continuous_numbers(adj_line):
             loc_start, loc_end = location
@@ -90,21 +90,35 @@ def get_gear_ratios(data=EXAMPLE):
     gear_list = []
     adjacencies = []
     for line_idx, line in enumerate(data):
-        print(line_idx, line)
+        # print(line_idx, line)
         gears = [l.start() for l in re.finditer(r"\*", line)]
         for gear_idx in gears:
             gear_list.append(gear_idx)
-            gear_start = gear_idx - 1 if gear_idx > 0 else 0
+            gear_start = gear_idx - 1 if gear_idx >= 0 else 0
             adjacent_numbers = get_adjacent_numbers(
-                data, line_idx, (gear_start, gear_idx + 1)
+                data, line_idx, (gear_start, gear_idx, gear_idx + 1)
             )
+            # if adjacent_numbers in [[164], [502]]:
+            #     print("________" * 10)
+            #     print(line_idx - 1, data[line_idx - 1])
+            #     print(line_idx, line)
+            #     print(line_idx + 1, data[line_idx + 1])
+            #     line_numbers = get_continuous_numbers(data[line_idx + 1])
+            #     print("afectation", (gear_start, gear_idx + 1))
+            #     print(line_numbers)
+            #     print(adjacent_numbers)
+            #     print("________" * 10)
+
             if len(adjacent_numbers) == 2:
                 adjacencies.append(adjacent_numbers)
                 gear_ratios.append(reduce(lambda a, b: a * b, adjacent_numbers))
-    print(len(gear_list))
-    print("matanga")
-    print(len(adjacencies))
+                # print(adjacent_numbers)
+    # print(len(gear_list))
+    # print("matanga")
+    # # print(adjacencies)
+    # print(len(gear_list))
     return gear_ratios
 
 
 ANSWER_1 = sum(get_part_numbers())
+ANSWER_2 = sum(get_gear_ratios())
